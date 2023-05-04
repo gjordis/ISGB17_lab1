@@ -15,8 +15,8 @@ app.listen(3000, function() {
     console.log('server uppe');
 });
 
-// middleware för mappen static så klienten kan ladda filerna
-app.use('/', express.static(__dirname + '/static')); 
+// middleware för mappen static så klienten kan ladda filerna, genom att ge "/public" tillgång fungerar spinnern.
+app.use('/public', express.static(__dirname + '/static'));
 
 // moddleware för att servern skall kunna ta emot från klienten
 app.use(express.urlencoded({extended : true})); 
@@ -26,21 +26,32 @@ app.use(cookieParser());
 
 // endpoint för get '/'
 app.get('/', function(request, response) {
-   
-    // Kollar om kakor finns
-    if (request.cookies.nickName && request.cookies.color) {
-        
-        // visar index.html
-        response.sendFile(__dirname + '/static/html/index.html');
-        console.log('kaka finns');
-    } else {
-        // visar loggain.html
-        response.sendFile(__dirname + '/static/html/loggain.html');
-        console.log('kaka finns ej');
-    }
-    
 
-});
+    // Kollar om kakor finns
+    if (request.cookies.nickName || request.cookies.color) {
+        // 
+        response.sendFile(__dirname + '/static/html/index.html', function (err){
+            if(err){
+                console.log(err);
+                response.send(err.message);
+            } else {
+                console.log(request.url, request.method);
+            }
+        });
+
+    }else {
+        response.sendFile(__dirname + '/static/html/loggain.html', function (err){
+            if(err){
+                console.log(err);
+                response.send(err.message);
+            } else {
+                console.log(request.url, request.method);
+            }
+        });
+        }
+    });
+
+      
 
 // end-point för get '/reset'
 app.get('/reset', function(request, response){
@@ -53,11 +64,11 @@ app.get('/reset', function(request, response){
         response.clearCookie(color);
 
         // rensar i globalObject
-        response.globalObject.playerOneNick = null, // Attribut för att spara nickname på spelare 1
-        response.globalObject.playerOneColor = null, // Attribut för att spara färg till spelare 1
+        globalObject.playerOneNick = null, // Attribut för att spara nickname på spelare 1
+        globalObject.playerOneColor = null, // Attribut för att spara färg till spelare 1
         
-        response.globalObject.playerTwoNick = null, // Attribut för att spara nickname på spelare 2
-        response.globalObject.playerTwoColor = null, // Attribut för att spara färg till spelare 1
+        globalObject.playerTwoNick = null, // Attribut för att spara nickname på spelare 2
+        globalObject.playerTwoColor = null, // Attribut för att spara färg till spelare 1
 
         // omdirigerar till '/'
         response.redirect('/');
@@ -104,13 +115,13 @@ app.post('/', function(request, response) {
             throw 'Ogiltig färg!';
         }
         // om spelarnas namn är likadana
-        if(globalObject.playerOneNick === globalObject.playerTwoNick) {
+        /*if(globalObject.playerOneNick === globalObject.playerTwoNick) {
             throw 'Nickname redan taget!';
         }
         // om spelarna färg är likadana
         if(globalObject.playerOneColor === globalObject.playerTwoColor) {
             throw 'Färg redan tagen!';
-        }
+        }*/
         // !!!här går allt bra och vi skall skapa kakor!!!
         // skapar två kakor med namn och tillhörande variabel, sätter livslängd till 2 timmar, och endast tillgänglig för servern
         response.cookie('nickName', nick_1, { maxAge : 120 * 60 * 1000, httpOnly : true});
@@ -120,10 +131,13 @@ app.post('/', function(request, response) {
 
 
     } catch (errMsg) {
-        // läser loggain.html för att nå den
+        // läser loggain.html för att nå dom
         fs.readFile(__dirname + '/static/html/loggain.html', function(err, data){
             // om errMsg är true
-            if(errMsg) {
+            if(err) {
+                console.log(err);
+                response.send(err.message);
+            } else {
                  
                 let serverDOM = new jsDom.JSDOM(data); // variabel för att nå DOM och kunna manipulera här från serversidan
 
