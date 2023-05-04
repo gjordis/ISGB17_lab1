@@ -4,7 +4,7 @@
 const express = require('express'); //konstant som hämtar express biblioteket
 const jsDom = require('jsdom'); // konstant som hämtar jsdom biblioteket
 const cookieParser = require('cookie-parser'); // konstant som hämtar cookie-parser biblioteket
-const globalObject = require('./servermodules/game-modul'); // konstant som hämtar game-modul
+const globalObject = require('./servermodules/game-modul.js'); // konstant som hämtar game-modul
 const fs = require('fs'); // konstant som hämtar File System biblioteket
 
 // konstant att använda för att hantera middleware, lyssnare
@@ -25,6 +25,9 @@ app.use(express.urlencoded({extended : true}));
 
 // endpoint för get '/'
 app.get('/', function(request, response) {
+    // !!!länkade in för att testa!!! //
+    response.sendFile(__dirname + '/static/html/loggain.html', function(err) {
+    });
 
 });
 
@@ -38,6 +41,7 @@ app.post('/', function(request, response) {
 
     let nick_1 = request.body.nick_1; // hämtar namnet som användaren skickar
     let color_1 = request.body.color_1; // hämtar färgkoden användaren skickar
+
 
     try {
         // om nick_1 är undefined
