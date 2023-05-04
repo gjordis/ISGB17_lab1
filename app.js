@@ -76,11 +76,14 @@ app.post('/', function(request, response) {
         // !!!här går allt bra och vi skall skapa kakor!!!
         // nästa föreläsning!
         response.cookie('nickName', nick_1, {maxAge : 60 * 60 * 2000, httpOnly : true});
-        response.cookie('color', color_1, {maxAge : 60 * 60 * 2000, httpOnly : true});
+        response.cooki('color', color_1, {maxAge : 60 * 60 * 2000, httpOnly : true});
 
 
     } catch (errMsg) {
         console.log(errMsg);
     }
+
+
+
 
 });
