@@ -22,17 +22,52 @@ app.use('/', express.static(__dirname + '/static'));
 app.use(express.urlencoded({extended : true})); 
 
 // !!här ska det vara middleware för att hantera kakor!!
+app.use(cookieParser());
 
 // endpoint för get '/'
 app.get('/', function(request, response) {
-    // !!!länkade in för att testa!!! //
-    response.sendFile(__dirname + '/static/html/loggain.html', function(err) {
-    });
+   
+    // Kollar om kakor finns
+    if (request.cookies.nickName && request.cookies.color) {
+        
+        // visar index.html
+        response.sendFile(__dirname + '/static/html/index.html');
+        console.log('kaka finns');
+    } else {
+        // visar loggain.html
+        response.sendFile(__dirname + '/static/html/loggain.html');
+        console.log('kaka finns ej');
+    }
+    
 
 });
 
 // end-point för get '/reset'
 app.get('/reset', function(request, response){
+
+    // kontrollerar om kakor finns
+    if (request.cookies.nickName && request.cookies.color) {
+        
+        // tar bort kakor
+        response.clearCookie(nickName);
+        response.clearCookie(color);
+
+        // rensar i globalObject
+        response.globalObject.playerOneNick = null, // Attribut för att spara nickname på spelare 1
+        response.globalObject.playerOneColor = null, // Attribut för att spara färg till spelare 1
+        
+        response.globalObject.playerTwoNick = null, // Attribut för att spara nickname på spelare 2
+        response.globalObject.playerTwoColor = null, // Attribut för att spara färg till spelare 1
+
+        // omdirigerar till '/'
+        response.redirect('/');
+        
+    } else {
+        
+        //// omdirigerar till '/'
+        response.redirect('/');
+        
+    }
 
 });
 
@@ -77,10 +112,33 @@ app.post('/', function(request, response) {
             throw 'Färg redan tagen!';
         }
         // !!!här går allt bra och vi skall skapa kakor!!!
-        // nästa föreläsning!
+        // skapar två kakor med namn och tillhörande variabel, sätter livslängd till 2 timmar, och endast tillgänglig för servern
+        response.cookie('nickName', nick_1, { maxAge : 120 * 60 * 1000, httpOnly : true});
+        response.cookie('color', color_1, { maxAge : 120 * 60 * 1000, httpOnly : true});
+        // omdiregerar användaren till "/"
+        response.redirect('/');
+
 
     } catch (errMsg) {
-        console.log(errMsg);
+        // läser loggain.html för att nå den
+        fs.readFile(__dirname + '/static/html/loggain.html', function(err, data){
+            // om errMsg är true
+            if(errMsg) {
+                 
+                let serverDOM = new jsDom.JSDOM(data); // variabel för att nå DOM och kunna manipulera här från serversidan
+
+                // ändrar texten i #errorMsg
+                serverDOM.window.document.querySelector('#errorMsg').textContent = errMsg;
+                // återför namnet till inputfältet
+                serverDOM.window.document.querySelector('#nick_1').setAttribute('value', nick_1);
+                // återför färgen till inputfältet
+                serverDOM.window.document.querySelector('#color_1').setAttribute('value', color_1);
+
+                // skickar det ändrade html dokumentet, serialize konverterar tillbaka till en sträng 
+                response.send(serverDOM.serialize());
+        }
+    });
+        
     }
 
 });
