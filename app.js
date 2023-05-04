@@ -27,11 +27,15 @@ app.use(cookieParser());
 // endpoint för get '/'
 app.get('/', function(request, response) {
 
+response.sendFile(__dirname + '/static/html/loggain.html', function(err) {
+
+});
+
 });
 
 // end-point för get '/reset'
 app.get('/reset', function(request, response){
-
+    
 });
 
 // end-poin för post '/'
@@ -78,9 +82,27 @@ app.post('/', function(request, response) {
         response.cookie('nickName', nick_1, {maxAge : 60 * 60 * 2000, httpOnly : true});
         response.cookie('color', color_1, {maxAge : 60 * 60 * 2000, httpOnly : true});
 
+        response.redirect('/');
+
 
     } catch (errMsg) {
-        console.log(errMsg);
+        
+        fs.readFile(__dirname + '/static/html/loggain.html' , function(err, data){ //läser in loggain.html och tar två parametrar, err och data.
+            if(errMsg){ //om errMsg är true så ska det inom if satsen hända.
+                const dom = new jsDom.JSDOM(data); //skapar en jsDOM för att skapa html element och kunna modifiera domen från server sidan.
+                const errorMsgDiv = dom.window.document.querySelector('#errorMsg'); //konstant för div elementet som har errorMsg som id.
+                const errorMsg = dom.window.document.createTextNode(errMsg); //en konstant som innehåller en textnode med värdet från errMsg.
+                errorMsgDiv.appendChild(errorMsg); //sätter errorMsg som barn till div.
+
+                const formNick = dom.window.document.querySelector('#nick_1');
+                const formColor = dom.window.document.querySelector('#color_1');
+
+                formNick.textContent = nick_1;
+                formColor.textContent = color_1;
+
+                response.send(dom.serialize()); //skickar det modifierade html dokumentet till till klienten efter anrop. serialize() metoden används för att göra om innehållet till en sträng.
+            }
+        })
     }
 
 
