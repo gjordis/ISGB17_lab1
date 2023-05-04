@@ -22,6 +22,7 @@ app.use('/', express.static(__dirname + '/static'));
 app.use(express.urlencoded({extended : true})); 
 
 // !!här ska det vara middleware för att hantera kakor!!
+app.use(cookieParser());
 
 // endpoint för get '/'
 app.get('/', function(request, response) {
@@ -74,6 +75,9 @@ app.post('/', function(request, response) {
         }
         // !!!här går allt bra och vi skall skapa kakor!!!
         // nästa föreläsning!
+        response.cookie('nickName', nick_1, {maxAge : 60 * 60 * 2000, httpOnly : true});
+        response.cookie('color', color_1, {maxAge : 60 * 60 * 2000, httpOnly : true});
+
 
     } catch (errMsg) {
         console.log(errMsg);
