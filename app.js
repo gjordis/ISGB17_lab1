@@ -26,7 +26,7 @@ app.use(cookieParser());
 
 // endpoint för get '/'
 app.get('/', function(request, response) {
-
+ 
     // Kollar om kakor finns
     if (request.cookies.nickName || request.cookies.color) {
         // om kakor finns skickar index.html
