@@ -1,6 +1,9 @@
+/* Grupp 17: Jonas Schymberg, Kristoffer Tapper och Emil Vestlund */
+
 'use strict';
 
 //Filen app.js är den enda ni skall och tillåts skriva kod i.
+
 const express = require('express'); //konstant som hämtar express biblioteket
 const jsDom = require('jsdom'); // konstant som hämtar jsdom biblioteket
 const cookieParser = require('cookie-parser'); // konstant som hämtar cookie-parser biblioteket
@@ -15,26 +18,26 @@ app.listen(3000, function() {
     console.log('server uppe');
 });
 
-// middleware för mappen static så klienten kan ladda filerna, genom att ge "/public" tillgång fungerar spinnern.
+// middleware för mappen static så klienten kan ladda filerna, ger "/public" tillgång eftersom det är länkat så i html-filen.
 app.use('/public', express.static(__dirname + '/static'));
 
-// moddleware för att servern skall kunna ta emot från klienten
+// middleware för att servern skall kunna ta emot från klienten, Med "extended : true" för att tolka fler data-objekt
 app.use(express.urlencoded({extended : true})); 
 
-// !!här ska det vara middleware för att hantera kakor!!
+// middleware för att hantera kakor
 app.use(cookieParser());
 
 // endpoint för get '/'
 app.get('/', function(request, response) {
  
-    // Kollar om kakor finns
-    if (request.cookies.nickName || request.cookies.color) {
+    // Kollar om båda kakorna finns
+    if (request.cookies.nickName && request.cookies.color) {
         // om kakor finns skickar index.html
         response.sendFile(__dirname + '/static/html/index.html', function (err){
             // skickar felmeddelande om ett fel påträffas
             if(err){
-                console.log(err);
-                response.send(err.message);
+                console.log('fel:' + err);
+                response.send(err.status);
             // vid normal drift logga url-begäran och http metod
             } else {
                 console.log(request.url, request.method);
@@ -46,7 +49,7 @@ app.get('/', function(request, response) {
             // skickar felmeddelande om ett fel påträffas
             if(err){
                 console.log(err);
-                response.send(err.message);
+                response.send(err.status);
             // vid normal drift logga url-begäran och http metod
             } else {
                 console.log(request.url, request.method);
@@ -61,29 +64,24 @@ app.get('/', function(request, response) {
 app.get('/reset', function(request, response){
 
     // kontrollerar om kakor finns
-    if (request.cookies.nickName && request.cookies.color) {
-        
-        // tar bort kakor
-        response.clearCookie(nickName);
-        response.clearCookie(color);
+    if(request.cookies.nickName) {
+        //finns kaka till nickName, rensa
+        response.clearCookie('nickName');
+    }
+        //finns kaka till color, rensa
+    if(request.cookies.color) {
+        response.clearCookie('color');
+    }
 
         // rensar i globalObject
         globalObject.playerOneNick = null, // Attribut för att spara nickname på spelare 1
         globalObject.playerOneColor = null, // Attribut för att spara färg till spelare 1
         
         globalObject.playerTwoNick = null, // Attribut för att spara nickname på spelare 2
-        globalObject.playerTwoColor = null, // Attribut för att spara färg till spelare 1
+        globalObject.playerTwoColor = null; // Attribut för att spara färg till spelare 1
 
         // omdirigerar till '/'
         response.redirect('/');
-        
-    } else {
-        
-        //// omdirigerar till '/'
-        response.redirect('/');
-        
-    }
-
 });
 
 // end-poin för post '/'
@@ -94,15 +92,20 @@ app.post('/', function(request, response) {
 
 
     try {
+        console.log('namn: ' + nick_1);
+        console.log('color: ' + color_1);
+        console.log(request.body);
+
         // om nick_1 är undefined
         if(nick_1 === undefined) {
             throw 'Nickname saknas!';
         }
         // om color_1 är undefined
-        if(color_1 === undefined) {
+        else if(color_1 === undefined) {
             throw 'Färg saknas!';
         }
-        // trimmar nick_1 och color_1 för att ta bort mellanslag
+
+        // trimmar nick_1 och color_1 för att ta bort eventuella mellanslag
         nick_1 = nick_1.trim();
         color_1 = color_1.trim();
         
@@ -111,19 +114,19 @@ app.post('/', function(request, response) {
             throw 'Nickname skall vara tre tecken långt!';
         }
         // om color_1 inte är 7 tecken
-        if(!color_1.length === 7) {
+        else if(!color_1.length === 7) {
             throw 'Färg skall innehålla sju tecken!';
         }
         // om color_1 har förbjudna färger
-        if(color_1 === '#ffffff' || color_1 === '#000000') {
+        else if(color_1 === '#ffffff' || color_1 === '#000000') {
             throw 'Ogiltig färg!';
         }
         // om spelarnas namn är likadana
-        if(globalObject.playerOneNick === globalObject.playerTwoNick) {
+        else if(globalObject.playerOneNick === globalObject.playerTwoNick) {
             throw 'Nickname redan taget!';
         }
         // om spelarna färg är likadana
-        if(globalObject.playerOneColor === globalObject.playerTwoColor) {
+        else if(globalObject.playerOneColor === globalObject.playerTwoColor) {
             throw 'Färg redan tagen!';
         }
         // !!!här går allt bra och vi skall skapa kakor!!!
@@ -140,7 +143,7 @@ app.post('/', function(request, response) {
             // skickar felmeddelande om ett fel påträffas
             if(err) {
                 console.log(err);
-                response.send(err.message);
+                response.send(err.status);
             } else {
                 // variabel för att nå DOM och kunna manipulera här från serversidan
                 let serverDOM = new jsDom.JSDOM(data); 
