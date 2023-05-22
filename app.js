@@ -73,7 +73,7 @@ app.get('/reset', function(request, response){
         response.clearCookie('color');
     }
 
-        // rensar i globalObject
+        // rensar berörda objekt i globalObject
         globalObject.playerOneNick = null, // Attribut för att spara nickname på spelare 1
         globalObject.playerOneColor = null, // Attribut för att spara färg till spelare 1
         
@@ -122,11 +122,11 @@ app.post('/', function(request, response) {
             throw 'Ogiltig färg!';
         }
         // om spelarnas namn är likadana
-        else if(globalObject.playerOneNick === globalObject.playerTwoNick) {
+        else if(nick_1 === globalObject.playerOneNick) {                    //Ändrad
             throw 'Nickname redan taget!';
         }
         // om spelarna färg är likadana
-        else if(globalObject.playerOneColor === globalObject.playerTwoColor) {
+        else if(color_1 === globalObject.playerOneColor) {                  //Ändrad
             throw 'Färg redan tagen!';
         }
         // !!!här går allt bra och vi skall skapa kakor!!!
