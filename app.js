@@ -114,7 +114,7 @@ app.post('/', function(request, response) {
             throw 'Nickname skall vara tre tecken långt!';
         }
         // om color_1 inte är 7 tecken
-        else if(!color_1.length === 7) {
+        else if(color_1.length !== 7) {
             throw 'Färg skall innehålla sju tecken!';
         }
         // om color_1 har förbjudna färger
