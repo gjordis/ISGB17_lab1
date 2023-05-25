@@ -11,10 +11,10 @@ const globalObject = require('./servermodules/game-modul.js'); // konstant som h
 const fs = require('fs'); // konstant som hämtar File System biblioteket
 
 // konstant att använda för att hantera middleware, lyssnare
-const app = express(); 
+const app = express();
 
 // startar webbwervern och lyssnar efter anrop på 3000
-app.listen(3000, function() { 
+app.listen(3000, function () {
     console.log('server uppe');
 });
 
@@ -22,70 +22,70 @@ app.listen(3000, function() {
 app.use('/public', express.static(__dirname + '/static'));
 
 // middleware för att servern skall kunna ta emot från klienten, Med "extended : true" för att tolka fler data-objekt
-app.use(express.urlencoded({extended : true})); 
+app.use(express.urlencoded({ extended: true }));
 
 // middleware för att hantera kakor
 app.use(cookieParser());
 
 // endpoint för get '/'
-app.get('/', function(request, response) {
- 
+app.get('/', function (request, response) {
+
     // Kollar om båda kakorna finns
     if (request.cookies.nickName && request.cookies.color) {
         // om kakor finns skickar index.html
-        response.sendFile(__dirname + '/static/html/index.html', function (err){
+        response.sendFile(__dirname + '/static/html/index.html', function (err) {
             // skickar felmeddelande om ett fel påträffas
-            if(err){
+            if (err) {
                 console.log('fel:' + err);
                 response.send(err.status);
-            // vid normal drift logga url-begäran och http metod
+                // vid normal drift logga url-begäran och http metod
             } else {
                 console.log(request.url, request.method);
             }
         });
-    }else {
+    } else {
         // om kakor ej existerar, skicka loggain.html
-        response.sendFile(__dirname + '/static/html/loggain.html', function (err){
+        response.sendFile(__dirname + '/static/html/loggain.html', function (err) {
             // skickar felmeddelande om ett fel påträffas
-            if(err){
+            if (err) {
                 console.log(err);
                 response.send(err.status);
-            // vid normal drift logga url-begäran och http metod
+                // vid normal drift logga url-begäran och http metod
             } else {
                 console.log(request.url, request.method);
             }
         });
-        }
-    });
+    }
+});
 
-      
+
 
 // end-point för get '/reset'
-app.get('/reset', function(request, response){
+app.get('/reset', function (request, response) {
 
     // kontrollerar om kakor finns
-    if(request.cookies.nickName) {
+    if (request.cookies.nickName) {
         //finns kaka till nickName, rensa
         response.clearCookie('nickName');
     }
-        //finns kaka till color, rensa
-    if(request.cookies.color) {
+    //finns kaka till color, rensa
+    if (request.cookies.color) {
         response.clearCookie('color');
     }
 
-        // rensar berörda objekt i globalObject
-        globalObject.playerOneNick = null, // Attribut för att spara nickname på spelare 1
-        globalObject.playerOneColor = null, // Attribut för att spara färg till spelare 1
-        
-        globalObject.playerTwoNick = null, // Attribut för att spara nickname på spelare 2
-        globalObject.playerTwoColor = null; // Attribut för att spara färg till spelare 1
+    // rensar berörda objekt i globalObject
+    globalObject.playerOneNick = null, // Attribut för att spara nickname på spelare 1
+    globalObject.playerOneColor = null, // Attribut för att spara färg till spelare 1
 
-        // omdirigerar till '/'
-        response.redirect('/');
+    globalObject.playerTwoNick = null, // Attribut för att spara nickname på spelare 2
+    globalObject.playerTwoColor = null; // Attribut för att spara färg till spelare 1
+
+    // omdirigerar till '/'
+    response.redirect('/');
 });
 
 // end-poin för post '/'
-app.post('/', function(request, response) {
+app.post('/', function (request, response) {
 
     let nick_1 = request.body.nick_1; // hämtar namnet som användaren skickar
     let color_1 = request.body.color_1; // hämtar färgkoden användaren skickar
@@ -97,56 +97,73 @@ app.post('/', function(request, response) {
         console.log(request.body);
 
         // om nick_1 är undefined
-        if(nick_1 === undefined) {
+        if (nick_1 === undefined) {
             throw 'Nickname saknas!';
         }
         // om color_1 är undefined
-        else if(color_1 === undefined) {
+        else if (color_1 === undefined) {
             throw 'Färg saknas!';
         }
 
         // trimmar nick_1 och color_1 för att ta bort eventuella mellanslag
         nick_1 = nick_1.trim();
         color_1 = color_1.trim();
-        
+
         // om nick_1 är mindre än tre tecken
-        if(nick_1.length < 3) {
+        if (nick_1.length < 3) {
             throw 'Nickname skall vara tre tecken långt!';
         }
         // om color_1 inte är 7 tecken
-        else if(color_1.length !== 7) {
+        else if (color_1.length !== 7) {
             throw 'Färg skall innehålla sju tecken!';
         }
         // om color_1 har förbjudna färger
-        else if(color_1 === '#ffffff' || color_1 === '#000000') {
+        else if (color_1 === '#ffffff' || color_1 === '#000000') {
             throw 'Ogiltig färg!';
         }
         // om spelarnas namn är likadana
-        else if(nick_1 === globalObject.playerOneNick) {                    //Ändrad
+        else if (nick_1 === globalObject.playerOneNick) {                    //Ändrad
             throw 'Nickname redan taget!';
         }
         // om spelarna färg är likadana
-        else if(color_1 === globalObject.playerOneColor) {                  //Ändrad
+        else if (color_1 === globalObject.playerOneColor) {                  //Ändrad
             throw 'Färg redan tagen!';
         }
         // !!!här går allt bra och vi skall skapa kakor!!!
         // skapar två kakor med namn och tillhörande variabel, sätter livslängd till 2 timmar, och endast tillgänglig för servern
-        response.cookie('nickName', nick_1, { maxAge : 120 * 60 * 1000, httpOnly : true});
-        response.cookie('color', color_1, { maxAge : 120 * 60 * 1000, httpOnly : true});
+        response.cookie('nickName', nick_1, { maxAge: 120 * 60 * 1000, httpOnly: true });
+        response.cookie('color', color_1, { maxAge: 120 * 60 * 1000, httpOnly: true });
+
+        /* Tilldelar spelare till globala objekt,
+        så vi kan jämföra namn och färg mellan spelarna */
+        if (globalObject.playerOneNick === null) {
+            globalObject.playerOneNick = nick_1;
+            globalObject.playerOneColor = color_1;
+        } else if(globalObject.playerTwoNick === null) {
+            globalObject.playerTwoNick = nick_1;
+            globalObject.playerTwoColor = color_1;
+        }
+        console.log('P1 efter tilldelning: ', globalObject.playerOneNick);
+        console.log('P1 efter tilldelning: ', globalObject.playerOneColor);
+        console.log('P2 efter tilldelning: ', globalObject.playerTwoNick);
+        console.log('P2 efter tilldelning: ', globalObject.playerTwoColor);
+
         // omdiregerar användaren till "/"
         response.redirect('/');
+
+        
 
 
     } catch (errMsg) {
         // läser loggain.html för att nå dom
-        fs.readFile(__dirname + '/static/html/loggain.html', function(err, data){
+        fs.readFile(__dirname + '/static/html/loggain.html', function (err, data) {
             // skickar felmeddelande om ett fel påträffas
-            if(err) {
+            if (err) {
                 console.log(err);
                 response.send(err.status);
             } else {
                 // variabel för att nå DOM och kunna manipulera här från serversidan
-                let serverDOM = new jsDom.JSDOM(data); 
+                let serverDOM = new jsDom.JSDOM(data);
 
                 // ändrar texten i #errorMsg
                 serverDOM.window.document.querySelector('#errorMsg').textContent = errMsg;
@@ -157,23 +174,10 @@ app.post('/', function(request, response) {
 
                 // skickar det ändrade html dokumentet, serialize konverterar tillbaka till en sträng 
                 response.send(serverDOM.serialize());
-        }
-    });
-       
-    }
-    /* Tilldelar spelare till globala objekt,
-    så vi kan jämföra namn och färg mellan spelarna */
+            }
+        });
 
-    if(globalObject.playerOneNick === null) {
-        globalObject.playerOneNick = nick_1;
-        globalObject.playerOneColor = color_1;
-    }else {
-        globalObject.playerTwoNick = nick_1;
-        globalObject.playerTwoColor = color_1;
     }
-    //console.log('P1 efter tilldelning: ', globalObject.playerOneNick);
-    //console.log('P1 efter tilldelning: ', globalObject.playerOneColor);
-    //console.log('P2 efter tilldelning: ', globalObject.playerTwoNick);
-    //console.log('P2 efter tilldelning: ', globalObject.playerTwoColor);
+
 
 });
