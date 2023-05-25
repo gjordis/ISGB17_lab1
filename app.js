@@ -159,7 +159,21 @@ app.post('/', function(request, response) {
                 response.send(serverDOM.serialize());
         }
     });
-        
+       
     }
+    /* Tilldelar spelare till globala objekt,
+    så vi kan jämföra namn och färg mellan spelarna */
+
+    if(globalObject.playerOneNick === null) {
+        globalObject.playerOneNick = nick_1;
+        globalObject.playerOneColor = color_1;
+    }else {
+        globalObject.playerTwoNick = nick_1;
+        globalObject.playerTwoColor = color_1;
+    }
+    //console.log('P1 efter tilldelning: ', globalObject.playerOneNick);
+    //console.log('P1 efter tilldelning: ', globalObject.playerOneColor);
+    //console.log('P2 efter tilldelning: ', globalObject.playerTwoNick);
+    //console.log('P2 efter tilldelning: ', globalObject.playerTwoColor);
 
 });
